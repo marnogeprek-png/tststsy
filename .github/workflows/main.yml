@@ -9,22 +9,13 @@ jobs:
     timeout-minutes: 30
 
     steps:
-      - name: Install tmate
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y tmate
-
-      - name: Start tmate session
-        run: |
-          tmate -S /tmp/tmate.sock new-session -d
-          tmate -S /tmp/tmate.sock wait tmate-ready
-
-          echo "=============================="
-          echo "SSH COMMAND:"
-          tmate -S /tmp/tmate.sock display -p '#{tmate_ssh}'
-          echo "=============================="
+      - name: Start SSH session
+        uses: mxschmitt/action-tmate@v3
+        with:
+          detached: true
 
       - name: Keep runner alive
         run: |
-          echo "Runner SSH aktif selama job berlangsung."
+          echo "SSH runner aktif."
+          echo "Session akan tetap hidup selama job berjalan."
           sleep 1800
