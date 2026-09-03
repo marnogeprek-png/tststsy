@@ -1,21 +1,41 @@
-name: Temporary SSH Runner
+name: Temporary VPS via tmate
 
 on:
   workflow_dispatch:
 
 jobs:
-  ssh:
+  vps:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 360
 
     steps:
-      - name: Start SSH session
-        uses: mxschmitt/action-tmate@v3
-        with:
-          detached: true
-
-      - name: Keep runner alive
+      - name: Update system
+        shell: bash
         run: |
-          echo "SSH runner aktif."
-          echo "Session akan tetap hidup selama job berjalan."
-          sleep 1800
+          set -e
+          sudo apt-get update -y
+          sudo apt-get upgrade -y
+
+      - name: Install common tools
+        shell: bash
+        run: |
+          set -e
+          sudo apt-get install -y \
+            curl \
+            wget \
+            git \
+            unzip \
+            zip \
+            jq \
+            htop \
+            neofetch \
+            nano \
+            vim \
+            tmux \
+            ca-certificates
+
+      - name: Start tmate SSH session
+        uses: mxschmitt/action-tmate@v3
+        timeout-minutes: 350
+        with:
+          limit-access-to-actor: true
