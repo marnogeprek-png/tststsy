@@ -1,4 +1,4 @@
-name: Tmate VPS
+name: VPS Tmate
 
 on:
   workflow_dispatch:
@@ -6,12 +6,77 @@ on:
 jobs:
   vps:
     runs-on: ubuntu-latest
-    timeout-minutes: 355
+    timeout-minutes: 350
 
     steps:
-      - name: Start tmate
-        uses: mxschmitt/action-tmate@v3
-        timeout-minutes: 350
-        with:
-          detached: false
-          connect-timeout-seconds: 60
+      - name: Install tmate
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+          sudo apt-get update -y
+          sudo apt-get install -y tmate
+
+          tmate -V
+
+      - name: Start VPS
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+          SOCKET="/tmp/tmate.sock"
+
+          rm -f "$SOCKET"
+
+          tmate -S "$SOCKET" new-session -d
+
+          echo "Waiting for tmate connection..."
+
+          for i in {1..60}; do
+            SSH="$(tmate -S "$SOCKET" display -p '#{tmate_ssh}' 2>/dev/null || true)"
+            WEB="$(tmate -S "$SOCKET" display -p '#{tmate_web}' 2>/dev/null || true)"
+
+            if [ -n "$SSH" ]; then
+              echo
+              echo "======================================"
+              echo "          TMATE VPS READY"
+              echo "======================================"
+              echo
+              echo "SSH:"
+              echo "$SSH"
+              echo
+              echo "WEB:"
+              echo "$WEB"
+              echo
+              echo "======================================"
+
+              break
+            fi
+
+            echo "Waiting... ($i/60)"
+            sleep 5
+          done
+
+          SSH="$(tmate -S "$SOCKET" display -p '#{tmate_ssh}' 2>/dev/null || true)"
+
+          if [ -z "$SSH" ]; then
+            echo "ERROR: tmate gagal mendapatkan SSH address."
+            echo
+            echo "TMATE LOG:"
+            tmate -S "$SOCKET" show-messages || true
+            exit 1
+          fi
+
+          echo
+          echo "VPS is running."
+          echo "Connection:"
+          echo "$SSH"
+
+          while true; do
+            if ! tmate -S "$SOCKET" has-session 2>/dev/null; then
+              echo "tmate session ended."
+              exit 0
+            fi
+
+            sleep 30
+          done
