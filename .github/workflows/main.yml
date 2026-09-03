@@ -1,4 +1,4 @@
-name: Temporary VPS via tmate
+name: Temporary VPS
 
 on:
   workflow_dispatch:
@@ -9,17 +9,9 @@ jobs:
     timeout-minutes: 360
 
     steps:
-      - name: Update system
-        shell: bash
+      - name: Install dependencies
         run: |
-          set -e
           sudo apt-get update -y
-          sudo apt-get upgrade -y
-
-      - name: Install common tools
-        shell: bash
-        run: |
-          set -e
           sudo apt-get install -y \
             curl \
             wget \
@@ -28,14 +20,15 @@ jobs:
             zip \
             jq \
             htop \
-            neofetch \
             nano \
             vim \
             tmux \
-            ca-certificates
+            ca-certificates \
+            openssh-client
 
-      - name: Start tmate SSH session
+      - name: Start tmate
         uses: mxschmitt/action-tmate@v3
         timeout-minutes: 350
         with:
-          limit-access-to-actor: true
+          detached: false
+          connect-timeout-seconds: 600
