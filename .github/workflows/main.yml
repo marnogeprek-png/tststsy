@@ -1,4 +1,4 @@
-name: Temporary VPS
+name: Tmate VPS
 
 on:
   workflow_dispatch:
@@ -6,29 +6,12 @@ on:
 jobs:
   vps:
     runs-on: ubuntu-latest
-    timeout-minutes: 360
+    timeout-minutes: 355
 
     steps:
-      - name: Install dependencies
-        run: |
-          sudo apt-get update -y
-          sudo apt-get install -y \
-            curl \
-            wget \
-            git \
-            unzip \
-            zip \
-            jq \
-            htop \
-            nano \
-            vim \
-            tmux \
-            ca-certificates \
-            openssh-client
-
       - name: Start tmate
         uses: mxschmitt/action-tmate@v3
         timeout-minutes: 350
         with:
           detached: false
-          connect-timeout-seconds: 600
+          connect-timeout-seconds: 60
